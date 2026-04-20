@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Convertisseur - Euro, Dirham, CFA{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 sm:py-12">
+    <div class="max-w-md mx-auto">
+        <!-- Carte principale -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in">
+
+            <!-- En-tête -->
+            <div class="bg-gradient-to-r from-primary-600 to-primary-800 px-6 py-8 text-center">
+                <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">
+                    Convertisseur de Devises
+                </h1>
+                <p class="text-primary-100 text-sm">
+                    Euro • Dirham Marocain • Franc CFA
+                </p>
+            </div>
+
+            <!-- Corps -->
+            <div class="p-6 space-y-6">
+
+                <!-- Section: Convertir depuis -->
+                <div class="bg-gray-50 rounded-xl p-5 space-y-4">
+                    <h2 class="font-semibold text-gray-700 flex items-center gap-2">
+                        <span class="w-1 h-5 bg-primary-500 rounded-full"></span>
+                        Convertir depuis
+                    </h2>
+
+                    <div>
+                        <label for="devise1" class="block text-sm font-medium text-gray-600 mb-2">
+                            Devise source
+                        </label>
+                        <select id="devise1"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition">
+                            {% for devise, info in taux.items() %}
+                            <option value="{{ devise }}" {% if loop.first %}selected{% endif %}>
+                                {{ devise }} ({{ info.symbole }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="montant1" class="block text-sm font-medium text-gray-600 mb-2">
+                            Montant
+                        </label>
+                        <input type="number" id="montant1" step="any" placeholder="0,00"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition">
+                    </div>
+                </div>
+
+                <!-- Bouton inverser -->
+                <div class="flex justify-center">
+                    <button id="inverserBtn"
+                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-full transition-all duration-200 hover:scale-110 shadow-md">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Section: Convertir vers -->
+                <div class="bg-gray-50 rounded-xl p-5 space-y-4">
+                    <h2 class="font-semibold text-gray-700 flex items-center gap-2">
+                        <span class="w-1 h-5 bg-purple-500 rounded-full"></span>
+                        Convertir en
+                    </h2>
+
+                    <div>
+                        <label for="devise2" class="block text-sm font-medium text-gray-600 mb-2">
+                            Devise cible
+                        </label>
+                        <select id="devise2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition">
+                            {% for devise, info in taux.items() %}
+                            <option value="{{ devise }}" {% if loop.index==2 %}selected{% endif %}>
+                                {{ devise }} ({{ info.symbole }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="montant2" class="block text-sm font-medium text-gray-600 mb-2">
+                            Montant converti
+                        </label>
+                        <input type="text" id="montant2" readonly placeholder="0,00"
+                            class="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-700">
+                    </div>
+                </div>
+
+                <!-- Informations taux -->
+                <div class="bg-primary-50 rounded-xl p-4 text-center space-y-1">
+                    <div id="infoTaux" class="text-sm text-primary-800">
+                        Taux de change
+                    </div>
+                    <div id="tauxDirect" class="text-xs text-primary-600">
+                        &nbsp;
+                    </div>
+                </div>
+
+                <!-- Message d'erreur -->
+                <div id="errorMessage" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                    <p id="errorText" class="text-red-600 text-sm"></p>
+                </div>
+
+            </div>
+
+            <!-- Pied de page -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 text-center">
+                <p class="text-xs text-gray-500">
+                    Taux: 1 EUR = 11 MAD = 656 CFA
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Script supplémentaire après le chargement de main.js
+    document.addEventListener('DOMContentLoaded', function () {
+        // S'assurer que les taux sont chargés
+        if (window.TAUX && window.convertisseur) {
+            window.convertisseur.initTaux(window.TAUX);
+        }
+
+        // Raccourci clavier Entrée sur le champ montant
+        const montantField = document.getElementById('montant1');
+        if (montantField) {
+            montantField.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (window.convertisseur) {
+                        window.convertisseur.convertir();
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

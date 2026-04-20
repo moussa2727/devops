@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>{% block title %}Convertisseur de Devises{% endblock %}</title>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-gradient-to-br from-primary-500 to-purple-700 min-h-screen">
+    {% block content %}{% endblock %}
+
+    <!-- Main JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- Pass taux data to JavaScript -->
+    <script>
+        // Injecter les taux depuis Flask vers JavaScript
+        var tauxData = JSON.parse('{{ taux|tojson|safe }}');
+
+        // Initialiser les taux dans le module convertisseur
+        if (window.convertisseur && tauxData) {
+            window.convertisseur.initTaux(tauxData);
+        }
+
+        // Alternative directe si le module n'est pas chargé
+        window.TAUX = tauxData;
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>
