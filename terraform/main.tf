@@ -11,26 +11,16 @@ provider "docker" {
   host = "unix:///var/run/docker.sock"
 }
 
-resource "docker_image" "openrecon_img" {
-  name = "openrecon-app:latest"
-  build {
-    context    = "${path.module}/.."
-    dockerfile = "Dockerfile"
-    no_cache   = true
-  }
-  triggers = {
-    dir_sha1 = sha1(file("${path.module}/../gui.py"))
-  }
-  keep_locally = false
-}
-
+# On utilise l'image déjà buildée par Jenkins
 resource "docker_container" "openrecon_container" {
   name  = "openrecon-service"
-  image = docker_image.openrecon_img.image_id
+  image = "openrecon-app:latest"
+
   ports {
     internal = 5000
     external = 8081
   }
+
   restart = "always"
   must_run = true
 }

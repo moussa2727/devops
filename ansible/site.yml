@@ -3,14 +3,15 @@
   hosts: localhost
   connection: local
   gather_facts: false
+
   tasks:
-    - name: Attendre que le port 8081 reponde
+    - name: Attendre que le service démarre
       wait_for:
         port: 8081
-        delay: 5
-        timeout: 60
+        delay: 10
+        timeout: 120
 
-    - name: Verifier l'acces HTTP
+    - name: Vérifier l'accès HTTP
       uri:
         url: "http://localhost:8081"
         status_code: 200
