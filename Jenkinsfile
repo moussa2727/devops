@@ -5,20 +5,24 @@ pipeline {
         stage('Installation des dépendances') {
             steps {
                 sh '''
+                # Nettoyage de l'ancien environnement
+                rm -rf venv
+                
+                # Création du venv
                 python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
+                
+                # Installation des dépendances
+                ./venv/bin/pip install --upgrade pip
+                ./venv/bin/pip install -r requirements.txt
                 '''
             }
         }
 
-        stage('Exécution') {
+        stage('Vérification du code') {
             steps {
-                sh '''
-                . venv/bin/activate
-                echo "Dépendances installées avec succès."
-                '''
+                echo "Vérification syntaxique de l'application..."
+                // On vérifie que app.py est syntaxiquement correct
+                sh './venv/bin/python -m py_compile app.py'
             }
         }
     }
