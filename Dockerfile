@@ -1,4 +1,23 @@
-# 1. Utiliser une image Python légère (Debian slim)
+# Utilisation d'une image Python légère
+FROM python:3.11-slim
+
+# Définition du répertoire de travail
+WORKDIR /app
+
+# Copie des dépendances en premier pour optimiser le cache
+COPY requirements.txt .
+
+# Installation des bibliothèques
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copie du reste du code (app.py, templates, static)
+COPY . .
+
+# Exposer le port interne de l'application
+EXPOSE 5000
+
+# Commande de lancement
+CMD ["python", "app.py"]# 1. Utiliser une image Python légère (Debian slim)
 FROM python:3.11-slim
 
 # 2. Définir le répertoire de travail dans le conteneur
