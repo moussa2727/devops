@@ -28,7 +28,7 @@ pipeline {
 
         stage('Déploiement Terraform') {
             steps {
-                echo "Mise à jour de l'infrastructure sur le port 8081..."
+                echo "Mise à jour de l'infrastructure..."
                 sh '''
                 if [ ! -d ".terraform" ]; then
                     terraform init
@@ -38,5 +38,13 @@ pipeline {
             }
         }
     }
-}
 
+    // C'est ici que la magie opère pour arrêter la boucle
+    post {
+        always {
+            echo "Nettoyage du workspace pour éviter les builds fantômes..."
+            // Supprime les fichiers qui trompent Git (tfstate, venv, etc.)
+            sh 'rm -rf venv .terraform *.tfstate *.tfstate.backup'
+        }
+    }
+}
