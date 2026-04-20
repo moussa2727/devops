@@ -1,50 +1,245 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('Installation dépendances') {
+        stage('0. Préparation du Serveur') {
             steps {
-                sh '''
-                rm -rf venv
-                python3 -m venv venv
-                ./venv/bin/pip install --upgrade pip
-                ./venv/bin/pip install -r requirements.txt
-                '''
+                // --- DEBUG : Cette commande va afficher tous les fichiers trouvés par Jenkins ---
+                sh 'ls -R'
+                // -----------------------------------------------------------------------------
+                
+                dir('ansible') {
+                    sh 'ansible-playbook -i "localhost," -c local setup_env.yml'
+                }
             }
         }
-
-        stage('Vérification code') {
-            steps {
-                sh './venv/bin/python -m py_compile app.py'
+        
+        stage('1. Audit & Tests') {
+            parallel {
+                stage('Bandit') { 
+                    steps { 
+                        sh 'bandit -c .bandit -r . || true' 
+                    } 
+                }
+                stage('Pytest') { 
+                    steps { 
+                        sh 'pytest' 
+                    } 
+                }
             }
         }
-
-        stage('Build Docker Image') {
+        
+        stage('2. Build Image') {
             steps {
-                echo "Construction de la nouvelle image Docker..."
-                sh 'docker build -t devops-app:latest .'
+                sh 'docker build -t openrecon-app:latest .'
             }
         }
-
-        stage('Déploiement Terraform') {
+        
+        stage('3. Infrastructure (Terraform)') {
             steps {
-                echo "Mise à jour de l'infrastructure..."
-                sh '''
-                if [ ! -d ".terraform" ]; then
-                    terraform init
-                fi
-                terraform apply -auto-approve
-                '''
+                dir('terraform') {
+                    sh 'docker rm -f openrecon-service || true'
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+        
+        stage('4. Vérification (Ansible)') {
+            steps {
+                dir('ansible') {
+                    sh 'ansible-playbook -i "localhost," -c local site.yml'
+                }
             }
         }
     }
-
-    // C'est ici que la magie opère pour arrêter la boucle
+    
     post {
-        always {
-            echo "Nettoyage du workspace pour éviter les builds fantômes..."
-            // Supprime les fichiers qui trompent Git (tfstate, venv, etc.)
-            sh 'rm -rf venv .terraform *.tfstate *.tfstate.backup'
+        failure { 
+            sh 'docker rm -f openrecon-service || true' 
+        }
+    }
+}pipeline {
+    agent any
+    
+    stages {
+        stage('0. Préparation du Serveur') {
+            steps {
+                // --- DEBUG : Cette commande va afficher tous les fichiers trouvés par Jenkins ---
+                sh 'ls -R'
+                // -----------------------------------------------------------------------------
+                
+                dir('ansible') {
+                    sh 'ansible-playbook -i "localhost," -c local setup_env.yml'
+                }
+            }
+        }
+        
+        stage('1. Audit & Tests') {
+            parallel {
+                stage('Bandit') { 
+                    steps { 
+                        sh 'bandit -c .bandit -r . || true' 
+                    } 
+                }
+                stage('Pytest') { 
+                    steps { 
+                        sh 'pytest' 
+                    } 
+                }
+            }
+        }
+        
+pipeline {
+    agent any
+    
+    stages {
+        stage('0. Préparation du Serveur') {
+            steps {
+                // --- DEBUG : Cette commande va afficher tous les fichiers trouvés par Jenkins ---
+                sh 'ls -R'
+                // -----------------------------------------------------------------------------
+                
+                dir('ansible') {
+                    sh 'ansible-playbook -i "localhost," -c local setup_env.yml'
+                }
+            }
+        }
+        
+        stage('1. Audit & Tests') {
+            parallel {
+                stage('Bandit') { 
+                    steps { 
+                        sh 'bandit -c .bandit -r . || true' 
+                    } 
+                }
+                stage('Pytest') { 
+                    steps { 
+                        sh 'pytest' 
+                    } 
+                }
+            }
+        }
+        
+        stage('2. Build Image') {
+            steps {
+                sh 'docker build -t openrecon-app:latest .'
+            }
+        }
+        
+        stage('3. Infrastructure (Terraform)') {
+            steps {
+                dir('terraform') {
+                    sh 'docker rm -f openrecon-service || true'
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+        
+        stage('4. Vérification (Ansible)') {
+            steps {
+                dir('ansible') {
+                    sh 'ansible-playbook -i "localhost," -c local site.yml'
+                }
+            }
+        }
+    }
+    
+    post {
+        failure { 
+            sh 'docker rm -f openrecon-service || true' 
+        }
+    }
+}        stage('2. Build Image') {
+            steps {
+                sh 'docker build -t openrecon-app:latest .'
+            }
+        }
+        
+        stage('3. Infrastructure (Terraform)') {
+            steps {
+                dir('terraform') {
+                    sh 'docker rm -f openrecon-service || true'
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+        
+        stage('4. Vérification (Ansible)') {
+            steps {
+                dir('ansible') {
+                    sh 'ansible-playbook -i "localhost," -c local site.yml'
+                }
+            }
+        }
+    }
+    
+    post {
+        failure { 
+            sh 'docker rm -f openrecon-service || true' 
+        }
+    }
+}pipeline {
+    agent any
+    
+    stages {
+        stage('0. Préparation du Serveur') {
+            steps {
+                // --- DEBUG : Cette commande va afficher tous les fichiers trouvés par Jenkins ---
+                sh 'ls -R'
+                // -----------------------------------------------------------------------------
+                
+                dir('ansible') {
+                    sh 'ansible-playbook -i "localhost," -c local setup_env.yml'
+                }
+            }
+        }
+        
+        stage('1. Audit & Tests') {
+            parallel {
+                stage('Bandit') { 
+                    steps { 
+                        sh 'bandit -c .bandit -r . || true' 
+                    } 
+                }
+                stage('Pytest') { 
+                    steps { 
+                        sh 'pytest' 
+                    } 
+                }
+            }
+        }
+        
+        stage('2. Build Image') {
+            steps {
+                sh 'docker build -t openrecon-app:latest .'
+            }
+        }
+        
+        stage('3. Infrastructure (Terraform)') {
+            steps {
+                dir('terraform') {
+                    sh 'docker rm -f openrecon-service || true'
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+   s         }
+        }
+        
+        stage('4. Vérification (Ansible)') {
+            steps {
+                dir('ansible') {
+  s                  sh 'ansible-playbook -i "localhost," -c local site.yml'
+                }
+            }
+ s       }
+    }
+    
+    post {
+        failure { 
+            sh 'docker rm -f openrecon-service || true' 
         }
     }
 }
